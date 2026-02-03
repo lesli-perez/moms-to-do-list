@@ -1,3 +1,17 @@
+// Resize Screen
+
+function resizeGame() {
+  const scale = Math.min(
+    window.innerWidth / 1024,
+    window.innerHeight / 768,
+    1
+  );
+  document.documentElement.style.setProperty('--scale', scale);
+}
+
+window.addEventListener('resize', resizeGame);
+resizeGame();
+
 
 // --------------------
 // Preload Scene
@@ -122,14 +136,23 @@ class GirlRoom extends Phaser.Scene {
 // --------------------
 // Game configuration
 // --------------------
-const config = {
-    type: Phaser.AUTO,
-    width: 1024,
-    height: 768,
-    parent: "game-container",
-    backgroundColor: "#e6e6e6",
-    scene: [PreloadScene, GirlRoom]
-};
 
+
+
+const config = {
+  type: Phaser.AUTO,
+  width: 1024,
+  height: 768,
+  parent: "game-container",
+  backgroundColor: "#e6e6e6",
+
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+
+  scene: [PreloadScene, GirlRoom]
+};
 const game = new Phaser.Game(config);
+
 
