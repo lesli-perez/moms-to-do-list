@@ -146,11 +146,6 @@ const config = {
   parent: "game-container",
   backgroundColor: "#e6e6e6",
 
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-
   scene: [PreloadScene, GirlRoom]
 };
 const game = new Phaser.Game(config);
