@@ -12,7 +12,6 @@ function resizeGame() {
 window.addEventListener('resize', resizeGame);
 resizeGame();
 
-
 // --------------------
 // Preload Scene
 // --------------------
@@ -31,9 +30,10 @@ class PreloadScene extends Phaser.Scene {
         const flowerImg = document.getElementById('loading-flower');
         this.textures.addImage('loadFlower', flowerImg);
 
-        // Load actual game assets
+        // Load game assets
         this.load.image("girl-bedroom", "assets/img/scenes/girls-bedroom.png");
         this.load.image("folded-blanket", "assets/img/inventory/folded-blanket.png");
+        this.load.image("slinky-toy", "assets/img/objects/slinky.png");
 
         // ----- Visual progress setup -----
         const flowerWidth = this.textures.get('flower').getSourceImage().width * 0.16;
@@ -104,13 +104,19 @@ class GirlRoom extends Phaser.Scene {
         foldedBlanket.setScale(0.12);
         foldedBlanket.setInteractive({ useHandCursor: true, pixelPerfect: true });
 
+        // Slinky
+        const slinkyToy = this.add.image(110, 710, "slinky-toy");
+        slinkyToy.setScale(0.24);
+        slinkyToy.setInteractive({ useHandCursor: true, pixelPerfect: true });
+
         // Coordinate display top corner so i can see where to put everything
+        // REMOVE LATER!!!!
         const coordText = this.add.text(10, 10, '', { font: '16px Arial', fill: '#ffffff' });
         this.input.on('pointermove', (pointer) => {
             coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
         });
 
-        // Message text
+        // Message stuff
         const message = this.add.text(512, 700, "", {
             fontFamily: "Arial",
             fontSize: "20px",
@@ -118,16 +124,20 @@ class GirlRoom extends Phaser.Scene {
             stroke: "#000",
             strokeThickness: 2
         }).setOrigin(0.5);
-
-        // Folded blanket click interaction
         const showMessage = (text, duration = 2000) => {
             message.setText(text);
             if (message.hideTimer) message.hideTimer.remove(false);
             message.hideTimer = this.time.delayedCall(duration, () => message.setText(''), [], this);
         };
 
+        // Folded Blanket Click Interaction
         foldedBlanket.on("pointerdown", () => {
             showMessage("I can't make my bed with this blanket. It's dirty.");
+        });
+
+        // slinky Click Interaction
+        slinkyToy.on("pointerdown", () => {
+            showMessage("I should clean this up.");
         });
     }
 }
