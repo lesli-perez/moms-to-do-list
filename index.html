@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mom's To Do List!</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    /* Page background */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f7dded;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Game container */
+    #game-container {
+      width: 1024px;
+      height: 768px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      background: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game-container"></div>
+
+  <!-- Loading Screen!!!! -->
+   <img id="loading-logo" src="assets/img/scenes/loading-screen.png" style="display:none;" />
+   <img id="loading-flower" src="assets/img/objects/loading-flower.png" style="display:none;" />
+   
+  <!-- Phaser library -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
