@@ -36,8 +36,10 @@ class PreloadScene extends Phaser.Scene {
             { key: "slinky-toy", path: "assets/img/objects/slinky.png" },
             { key: "pen-crop", path: "assets/img/inventory/pen-cropped.png" },
             { key: "pen", path: "assets/img/inventory/pen.png" },
-            { key: "inventory-icon", path: "assets/img/objects/bag.png" }
-
+            { key: "inventory-icon", path: "assets/img/objects/bag.png" },
+            { key: "inventory-bg", path: "assets/img/scenes/inventory-bg.png" },
+            { key: "inventory-card-bg", path: "assets/img/objects/inventory-card-bg.png" },
+            { key: "exit-icon", path: "assets/img/objects/x.png" },
         ];
 
         gameAssets.forEach(asset => {
@@ -153,6 +155,8 @@ class GirlRoom extends Phaser.Scene {
                 key: "inventory-icon", 
                 x: 970, y: 700, scale: 0.09,
                 message: "",
+                inventory: true,
+                newScene: "InventoryScene"
             },
         ];
 
@@ -164,6 +168,10 @@ class GirlRoom extends Phaser.Scene {
 
             obj.on("pointerdown", () => {
                 // Check prerequisites
+                if (item.inventory && item.newScene){
+                  this.registry.set('lastScene', this.scene.key);
+                  this.scene.start(item.newScene);
+                }
                 if (!item.requiredInventory || this.inventory.has(item.requiredInventory)) {
                     this.showMessage(item.message);
                     // Optionally add item to inventory
@@ -191,6 +199,56 @@ class GirlRoom extends Phaser.Scene {
     }
 }
 
+
+// --------------------
+// Inventory
+// --------------------
+class InventoryScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'InventoryScene' });
+    }
+
+    create() {
+      const inventory = this.registry.get('inventory');
+      const lastScene = this.registry.get('lastScene') || 'GirlRoom';
+      // --------------------
+      // Background
+      this.add.image(512, 384, "inventory-bg").setDisplaySize(1024, 768);
+      const items  = [
+        {
+          key:"exit-icon",
+          x: 970, y: 40, scale: 0.07,
+          exit: true
+        }
+      ];
+      
+      items.forEach(item => {
+            const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
+            obj.setInteractive({ useHandCursor: true, pixelPerfect: true });
+
+            obj.on("pointerdown", () => {
+                // Check prerequisites
+                if (item.exit){
+                  this.scene.start(lastScene);
+                }
+                if (!item.requiredInventory || this.inventory.has(item.requiredInventory)) {
+                    this.showMessage(item.message);
+                    // Optionally add item to inventory
+                    if (item.addToInventory) this.inventory.add(item.addToInventory);
+                } else {
+                    this.showMessage("I can't use this yet.");
+                }
+            });
+        });
+
+
+    }
+  }
+
+
+
+
+
 // --------------------
 // Game configuration
 // --------------------
@@ -201,7 +259,7 @@ const config = {
   parent: "game-container",
   backgroundColor: "#e6e6e6",
 
-  scene: [PreloadScene, GirlRoom]
+  scene: [PreloadScene, GirlRoom, InventoryScene]
 };
 const game = new Phaser.Game(config);
 
