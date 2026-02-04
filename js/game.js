@@ -153,7 +153,8 @@ class GirlRoom extends Phaser.Scene {
                 key: "pen-crop", 
                 x: 689, y: 430, scale: 0.14,
                 message: "This could be useful!",
-                addToInventory: "pen"
+                addToInventory: "pen",
+                disappear: true
             },
             { 
                 key: "inventory-icon", 
@@ -179,6 +180,7 @@ class GirlRoom extends Phaser.Scene {
                 if (!item.requiredInventory || inventory.has(item.requiredInventory)) {
                     this.showMessage(item.message);
                     if (item.addToInventory) inventory.add(item.addToInventory);
+                    if (item.disappear) obj.setVisible(false).disableInteractive();
                 } else {
                     this.showMessage("I can't use this yet.");
                 }
