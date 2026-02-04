@@ -108,7 +108,11 @@ class GirlRoom extends Phaser.Scene {
     create() {
         // --------------------
         // Game state
-        this.inventory = new Set(); // track collected items
+        if (!this.registry.has('inventory')) {
+          this.registry.set('inventory', new Set());
+        }
+
+        const inventory = this.registry.get('inventory');
 
         // --------------------
         // Background
@@ -172,10 +176,9 @@ class GirlRoom extends Phaser.Scene {
                   this.registry.set('lastScene', this.scene.key);
                   this.scene.start(item.newScene);
                 }
-                if (!item.requiredInventory || this.inventory.has(item.requiredInventory)) {
+                if (!item.requiredInventory || inventory.has(item.requiredInventory)) {
                     this.showMessage(item.message);
-                    // Optionally add item to inventory
-                    if (item.addToInventory) this.inventory.add(item.addToInventory);
+                    if (item.addToInventory) inventory.add(item.addToInventory);
                 } else {
                     this.showMessage("I can't use this yet.");
                 }
@@ -214,27 +217,35 @@ class InventoryScene extends Phaser.Scene {
       // --------------------
       // Background
       this.add.image(512, 384, "inventory-bg").setDisplaySize(1024, 768);
+      
+      // --------------------
+      // Message display helper
+      this.message = this.add.text(512, 200, "Inventory: " + Array.from(inventory).join(', '), {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        fill: "#c5b632",
+        stroke: "#000",
+        strokeThickness: 2
+      }).setOrigin(0.5);
+
       const items  = [
         {
           key:"exit-icon",
           x: 970, y: 40, scale: 0.07,
-          exit: true
+          exit: true,
+          pixelPerfect: false
         }
       ];
       
       items.forEach(item => {
             const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
-            obj.setInteractive({ useHandCursor: true, pixelPerfect: true });
+            const pixels = item.pixelPerfect ?? true;
+            obj.setInteractive({ useHandCursor: true, pixelPerfect: pixels});
 
             obj.on("pointerdown", () => {
                 // Check prerequisites
                 if (item.exit){
                   this.scene.start(lastScene);
-                }
-                if (!item.requiredInventory || this.inventory.has(item.requiredInventory)) {
-                    this.showMessage(item.message);
-                    // Optionally add item to inventory
-                    if (item.addToInventory) this.inventory.add(item.addToInventory);
                 } else {
                     this.showMessage("I can't use this yet.");
                 }
