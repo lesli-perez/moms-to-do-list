@@ -191,8 +191,6 @@ class GirlRoom extends Phaser.Scene {
     }
 }
 
-
-
 // --------------------
 // Game configuration
 // --------------------
