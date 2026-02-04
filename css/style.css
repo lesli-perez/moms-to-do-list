@@ -24,3 +24,21 @@
       transform: scale(var(--scale));
       transform-origin: center;
     }
+
+    /* FONTS */
+
+@font-face {
+    font-family: 'Biro Script Plus';
+    src: url('../assets/fonts/biro-script/BiroScriptPlus-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Biro Script Plus';
+    src: url('../assets/fonts/biro-script/BiroScriptPlus.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+

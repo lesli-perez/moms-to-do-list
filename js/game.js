@@ -35,7 +35,9 @@ class PreloadScene extends Phaser.Scene {
             { key: "folded-blanket", path: "assets/img/inventory/folded-blanket.png" },
             { key: "slinky-toy", path: "assets/img/objects/slinky.png" },
             { key: "pen-crop", path: "assets/img/inventory/pen-cropped.png" },
-            { key: "pen", path: "assets/img/inventory/pen.png" }
+            { key: "pen", path: "assets/img/inventory/pen.png" },
+            { key: "inventory-icon", path: "assets/img/objects/bag.png" }
+
         ];
 
         gameAssets.forEach(asset => {
@@ -146,7 +148,12 @@ class GirlRoom extends Phaser.Scene {
                 x: 689, y: 430, scale: 0.14,
                 message: "This could be useful!",
                 addToInventory: "pen"
-            }
+            },
+            { 
+                key: "inventory-icon", 
+                x: 970, y: 700, scale: 0.09,
+                message: "",
+            },
         ];
 
         // --------------------
@@ -174,6 +181,13 @@ class GirlRoom extends Phaser.Scene {
         this.input.on('pointermove', pointer => {
             coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
         });
+        //testing font
+        // this.add.text(512, 700, "Hello!", {
+        //     fontFamily: 'Biro Script Plus',
+        //     fontSize: "24px",
+        //     fontWeight: "normal"
+        // }).setOrigin(0.5);
+
     }
 }
 
