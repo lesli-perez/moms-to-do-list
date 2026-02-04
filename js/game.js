@@ -112,7 +112,14 @@ class GirlRoom extends Phaser.Scene {
           this.registry.set('inventory', new Set());
         }
 
+        if (!this.registry.has('removedItems')) {
+          this.registry.set('removedItems', new Set());
+        } 
+  
         const inventory = this.registry.get('inventory');
+        const removedItems = this.registry.get('removedItems');
+
+        
 
         // --------------------
         // Background
@@ -168,6 +175,11 @@ class GirlRoom extends Phaser.Scene {
         // --------------------
         // Interactivity (is that a word?)
         items.forEach(item => {
+          // dont create items that are in inventory or removed!!
+            if (removedItems.has(item.key)) {
+              return;
+            }
+
             const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
             obj.setInteractive({ useHandCursor: true, pixelPerfect: true });
 
@@ -180,7 +192,13 @@ class GirlRoom extends Phaser.Scene {
                 if (!item.requiredInventory || inventory.has(item.requiredInventory)) {
                     this.showMessage(item.message);
                     if (item.addToInventory) inventory.add(item.addToInventory);
-                    if (item.disappear) obj.setVisible(false).disableInteractive();
+                   if (item.disappear) {
+                      obj.setVisible(false).disableInteractive();
+                      
+                      // remove item globally
+                      removedItems.add(item.key);
+                      this.registry.set('removedItems', removedItems);
+                  }
                 } else {
                     this.showMessage("I can't use this yet.");
                 }
