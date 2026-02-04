@@ -30,10 +30,17 @@ class PreloadScene extends Phaser.Scene {
         const flowerImg = document.getElementById('loading-flower');
         this.textures.addImage('loadFlower', flowerImg);
 
-        // Load game assets
-        this.load.image("girl-bedroom", "assets/img/scenes/girls-bedroom.png");
-        this.load.image("folded-blanket", "assets/img/inventory/folded-blanket.png");
-        this.load.image("slinky-toy", "assets/img/objects/slinky.png");
+        const gameAssets = [
+            { key: "girl-bedroom", path: "assets/img/scenes/girls-bedroom.png" },
+            { key: "folded-blanket", path: "assets/img/inventory/folded-blanket.png" },
+            { key: "slinky-toy", path: "assets/img/objects/slinky.png" },
+            { key: "pen-crop", path: "assets/img/inventory/pen-cropped.png" },
+            { key: "pen", path: "assets/img/inventory/pen.png" }
+        ];
+
+        gameAssets.forEach(asset => {
+            this.load.image(asset.key, asset.path);
+        });
 
         // ----- Visual progress setup -----
         const flowerWidth = this.textures.get('flower').getSourceImage().width * 0.16;
@@ -95,60 +102,86 @@ class GirlRoom extends Phaser.Scene {
     }
 
     create() {
+        // --------------------
+        // Game state
+        this.inventory = new Set(); // track collected items
+
+        // --------------------
         // Background
-        const girlRoom = this.add.image(512, 384, "girl-bedroom");
-        girlRoom.setDisplaySize(1024, 768);
+        this.add.image(512, 384, "girl-bedroom").setDisplaySize(1024, 768);
 
-        // Folded blanket
-        const foldedBlanket = this.add.image(410, 480, "folded-blanket");
-        foldedBlanket.setScale(0.12);
-        foldedBlanket.setInteractive({ useHandCursor: true, pixelPerfect: true });
-
-        // Slinky
-        const slinkyToy = this.add.image(110, 710, "slinky-toy");
-        slinkyToy.setScale(0.24);
-        slinkyToy.setInteractive({ useHandCursor: true, pixelPerfect: true });
-
-        // Coordinate display top corner so i can see where to put everything
-        // REMOVE LATER!!!!
-        const coordText = this.add.text(10, 10, '', { font: '16px Arial', fill: '#ffffff' });
-        this.input.on('pointermove', (pointer) => {
-            coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
-        });
-
-        // Message stuff
-        const message = this.add.text(512, 700, "", {
+        // --------------------
+        // Message display helper
+        this.message = this.add.text(512, 700, "", {
             fontFamily: "Arial",
             fontSize: "20px",
             fill: "#c5b632",
             stroke: "#000",
             strokeThickness: 2
         }).setOrigin(0.5);
-        const showMessage = (text, duration = 2000) => {
-            message.setText(text);
-            if (message.hideTimer) message.hideTimer.remove(false);
-            message.hideTimer = this.time.delayedCall(duration, () => message.setText(''), [], this);
+
+        this.showMessage = (text, duration = 2000) => {
+            this.message.setText(text);
+            if (this.message.hideTimer) this.message.hideTimer.remove(false);
+            this.message.hideTimer = this.time.delayedCall(duration, () => this.message.setText(''), [], this);
         };
 
-        // Folded Blanket Click Interaction
-        foldedBlanket.on("pointerdown", () => {
-            showMessage("I can't make my bed with this blanket. It's dirty.");
+        // --------------------
+        // Items
+        const items = [
+            { 
+                key: "folded-blanket", 
+                x: 410, y: 480, scale: 0.12,
+                message: "I can't make my bed with this blanket. It's dirty.",
+                requiredInventory: "pen"
+            },
+            { 
+                key: "slinky-toy", 
+                x: 110, y: 710, scale: 0.24,
+                message: "I should clean this up later.",
+                requiredInventory: "pen"
+            },
+            { 
+                key: "pen-crop", 
+                x: 689, y: 430, scale: 0.14,
+                message: "This could be useful!",
+                addToInventory: "pen"
+            }
+        ];
+
+        // --------------------
+        // Interactivity (is that a word?)
+        items.forEach(item => {
+            const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
+            obj.setInteractive({ useHandCursor: true, pixelPerfect: true });
+
+            obj.on("pointerdown", () => {
+                // Check prerequisites
+                if (!item.requiredInventory || this.inventory.has(item.requiredInventory)) {
+                    this.showMessage(item.message);
+                    // Optionally add item to inventory
+                    if (item.addToInventory) this.inventory.add(item.addToInventory);
+                } else {
+                    this.showMessage("I can't use this yet.");
+                }
+            });
         });
 
-        // slinky Click Interaction
-        slinkyToy.on("pointerdown", () => {
-            showMessage("I should clean this up.");
+        // --------------------
+        // Show coordinates (remove later!!!!!)
+        // --------------------
+        const coordText = this.add.text(10, 10, '', { font: '16px Arial', fill: '#ffffff' });
+        this.input.on('pointermove', pointer => {
+            coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
         });
     }
 }
 
 
+
 // --------------------
 // Game configuration
 // --------------------
-
-
-
 const config = {
   type: Phaser.AUTO,
   width: 1024,
