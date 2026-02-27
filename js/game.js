@@ -40,6 +40,8 @@ class PreloadScene extends Phaser.Scene {
             { key: "inventory-bg", path: "assets/img/scenes/inventory-bg.png" },
             { key: "inventory-card-bg", path: "assets/img/objects/inventory-card-bg.png" },
             { key: "exit-icon", path: "assets/img/objects/x.png" },
+            {key: "map", path: "assets/img/scenes/map.png"},
+            {key: "map-icon", path: "assets/img/objects/map-icon.png"},
         ];
 
         gameAssets.forEach(asset => {
@@ -167,8 +169,14 @@ class GirlRoom extends Phaser.Scene {
                 key: "inventory-icon", 
                 x: 970, y: 700, scale: 0.09,
                 message: "",
-                inventory: true,
                 newScene: "InventoryScene"
+            },
+            { 
+                key: "map-icon", 
+                x: 970, y: 50, scale: 0.19,
+                // change this ^
+                message: "",
+                newScene: "MapScene"
             },
         ];
 
@@ -185,7 +193,7 @@ class GirlRoom extends Phaser.Scene {
 
             obj.on("pointerdown", () => {
                 // Check prerequisites
-                if (item.inventory && item.newScene){
+                if (item.newScene){
                   this.registry.set('lastScene', this.scene.key);
                   this.scene.start(item.newScene);
                 }
@@ -212,12 +220,15 @@ class GirlRoom extends Phaser.Scene {
         this.input.on('pointermove', pointer => {
             coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
         });
+
         //testing font
-        // this.add.text(512, 700, "Hello!", {
-        //     fontFamily: 'Biro Script Plus',
-        //     fontSize: "24px",
-        //     fontWeight: "normal"
-        // }).setOrigin(0.5);
+        // document.fonts.load('24px "Biro Script Plus"').then(() => {
+        //     this.add.text(512, 700, "Hello!", {
+        //         fontFamily: '"Biro Script Plus"',
+        //         fontSize: "24px",
+        //         fontWeight: "normal"
+        //     }).setOrigin(0.5);
+        // });
 
     }
 }
@@ -277,7 +288,68 @@ class InventoryScene extends Phaser.Scene {
   }
 
 
+// --------------------
+// MAP
+// --------------------
+class MapScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'MapScene' });
+    }
 
+    create() {
+      const lastScene = this.registry.get('lastScene') || 'GirlRoom';
+      // --------------------
+      // Background
+      this.add.image(512, 384, "map").setDisplaySize(1024, 768);
+      
+      // --------------------
+      // Message display helper
+      let location = '';
+      if (lastScene == 'MomRoom'){
+        location = 'Mom\'s Room.';
+      }
+      else if (lastScene == 'KitchenScene'){
+        location = 'the Kitchen.';
+      }
+      else if (lastScene == 'BathroomScene'){
+        location = 'the Bathroom.';
+      }
+      else if (lastScene == 'GardenScene'){
+        location = 'the Garden.';
+      }
+      else if (lastScene == 'LaundromatScene'){
+        location = 'the Laundromat.';
+      }
+      else{location = "My Room."}
+
+      document.fonts.load('24px "Biro Script Plus"').then(() => {
+        this.message = this.add.text(537, 750, "You're in " + location, {
+            fontFamily: 'Biro Script Plus',
+            fontWeight: "normal",
+            fontSize: "24px",
+            fill: "#000",
+        })
+        .setOrigin(0.5)
+        .setRotation(Phaser.Math.DegToRad(5));
+    });
+
+      // --------------------
+      //EXIT
+        const items  = [
+        {
+          key:"exit-icon",
+          x: 970, y: 40, scale: 0.07,
+          exit: true,
+          pixelPerfect: false
+        }
+      ];
+      const obj = this.add.image(970, 40, 'exit-icon').setScale(0.07);
+      obj.setInteractive({ useHandCursor: true, pixelPerfect: false});
+      obj.on("pointerdown", () => {
+         this.scene.start(lastScene);
+      })
+    }
+  }
 
 
 // --------------------
@@ -290,7 +362,7 @@ const config = {
   parent: "game-container",
   backgroundColor: "#e6e6e6",
 
-  scene: [PreloadScene, GirlRoom, InventoryScene]
+  scene: [PreloadScene, GirlRoom, InventoryScene, MapScene]
 };
 const game = new Phaser.Game(config);
 
