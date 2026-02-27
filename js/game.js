@@ -38,7 +38,7 @@ class PreloadScene extends Phaser.Scene {
             { key: "pen", path: "assets/img/inventory/pen.png" },
             { key: "inventory-icon", path: "assets/img/objects/bag.png" },
             { key: "inventory-bg", path: "assets/img/scenes/inventory-bg.png" },
-            { key: "inventory-card-bg", path: "assets/img/objects/inventory-card-bg.png" },
+            { key: "inventory-card", path: "assets/img/objects/inventory-card.png" },
             { key: "exit-icon", path: "assets/img/objects/x.png" },
             {key: "map", path: "assets/img/scenes/map.png"},
             {key: "map-icon", path: "assets/img/objects/map-icon.png"},
