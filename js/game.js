@@ -42,7 +42,8 @@ class PreloadScene extends Phaser.Scene {
             { key: "exit-icon", path: "assets/img/objects/x.png" },
             {key: "map", path: "assets/img/scenes/map.png"},
             {key: "map-icon", path: "assets/img/objects/map-icon.png"},
-            { key: "kitchen", path: "assets/img/scenes/kitchen.png" },            
+            { key: "kitchen", path: "assets/img/scenes/kitchen.png" },          
+            {key: "moms-list", path: "assets/img/inventory/moms-list.png"}  
         ];
 
         gameAssets.forEach(asset => {
@@ -242,6 +243,22 @@ class KitchenScene extends Phaser.Scene {
         // Background
         this.add.image(512, 384, "kitchen")
             .setDisplaySize(1024, 768);
+        
+        // --------------------
+        // Message display helper
+        this.message = this.add.text(512, 700, "", {
+            fontFamily: "Arial",
+            fontSize: "20px",
+            fill: "#c5b632",
+            stroke: "#000",
+            strokeThickness: 2
+        }).setOrigin(0.5);
+
+        this.showMessage = (text, duration = 2000) => {
+            this.message.setText(text);
+            if (this.message.hideTimer) this.message.hideTimer.remove(false);
+            this.message.hideTimer = this.time.delayedCall(duration, () => this.message.setText(''), [], this);
+        };
 
          // --------------------
         // Items
@@ -258,6 +275,14 @@ class KitchenScene extends Phaser.Scene {
                 message: "",
                 newScene: "MapScene"
             },
+            { 
+                key: "moms-list", 
+                x: 896, y: 200, scale: 0.05,
+                message: "Mom must have left this for me.",
+                addToInventory: "moms-list",
+                disappear: true,
+            },
+
         ];
 
         // --------------------
@@ -287,6 +312,12 @@ class KitchenScene extends Phaser.Scene {
                       removedItems.add(item.key);
                       this.registry.set('removedItems', removedItems);
                   }
+                if (item.key == "moms-list" && !inventory.has("pen")) {
+                    //HINT
+                    this.time.delayedCall(2000, () => {
+                        this.showMessage("If only I had a pen...");
+                    })
+                }
                 } else {
                     this.showMessage("I can't use this yet.");
                 }
@@ -335,13 +366,14 @@ class InventoryScene extends Phaser.Scene {
 
 
         const itemData = {
-            pen: { image: 'pen', name: 'Pen', scale: 0.4 },
-            dirtyBlanket: { image: 'folded-blanket', name: 'Dirty Blanket', scale: 0.3 }
+            pen: { image: 'pen', name: 'Pen', scale: 0.4, fontSize: "38px" },
+            "folded-blanket": { image: 'folded-blanket', name: 'Dirty Blanket', scale: 0.3, fontSize: "38px" },
+            "moms-list": {image: 'moms-list', name: 'Mom\'s To Do List', scale: 0.09, fontSize: "34px"}
         };
 
         const startX = 355;
         const startY = 248;
-        const spacingX = 220;
+        const spacingX = 340;
         const spacingY = 260;
         const columns = 3;
 
@@ -363,7 +395,7 @@ class InventoryScene extends Phaser.Scene {
 
             const label = this.add.text(0, 75, data.name, {
                 fontFamily: '"Biro Script Plus"',
-                fontSize: "38px",
+                fontSize: data.fontSize,
                 fontWeight: "normal",
                 color: "#b402ad"
             }).setOrigin(0.5);
