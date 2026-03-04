@@ -53,7 +53,7 @@ class PreloadScene extends Phaser.Scene {
         this.flowersShown = 0;
         const totalFlowers = 10;
         const spacing = 60;
-        const startX = 512-(3.5*spacing) - (5 * flowerWidth);
+        const startX = 512-(4.5*spacing) - (5 * flowerWidth);
         const y = 600;
 
         this.visualProgress = 0;   // 0 → 1
@@ -174,7 +174,6 @@ class GirlRoom extends Phaser.Scene {
             { 
                 key: "map-icon", 
                 x: 970, y: 50, scale: 0.19,
-                // change this ^
                 message: "",
                 newScene: "MapScene"
             },
@@ -221,15 +220,6 @@ class GirlRoom extends Phaser.Scene {
             coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
         });
 
-        //testing font
-        // document.fonts.load('24px "Biro Script Plus"').then(() => {
-        //     this.add.text(512, 700, "Hello!", {
-        //         fontFamily: '"Biro Script Plus"',
-        //         fontSize: "24px",
-        //         fontWeight: "normal"
-        //     }).setOrigin(0.5);
-        // });
-
     }
 }
 
@@ -243,49 +233,69 @@ class InventoryScene extends Phaser.Scene {
     }
 
     create() {
-      const inventory = this.registry.get('inventory');
-      const lastScene = this.registry.get('lastScene') || 'GirlRoom';
-      // --------------------
-      // Background
-      this.add.image(512, 384, "inventory-bg").setDisplaySize(1024, 768);
-      
-      // --------------------
-      // Message display helper
-      this.message = this.add.text(512, 200, "Inventory: " + Array.from(inventory).join(', '), {
-        fontFamily: "Arial",
-        fontSize: "20px",
-        fill: "#c5b632",
-        stroke: "#000",
-        strokeThickness: 2
-      }).setOrigin(0.5);
+        const inventorySet = this.registry.get('inventory') || [];
+        const inventory = Array.from(inventorySet);
+        const lastScene = this.registry.get('lastScene') || 'GirlRoom';
 
-      const items  = [
-        {
-          key:"exit-icon",
-          x: 970, y: 40, scale: 0.07,
-          exit: true,
-          pixelPerfect: false
-        }
-      ];
-      
-      items.forEach(item => {
-            const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
-            const pixels = item.pixelPerfect ?? true;
-            obj.setInteractive({ useHandCursor: true, pixelPerfect: pixels});
+        // --------------------
+        // Background
+        this.add.image(512, 384, "inventory-bg")
+            .setDisplaySize(1024, 768);
 
-            obj.on("pointerdown", () => {
-                // Check prerequisites
-                if (item.exit){
-                  this.scene.start(lastScene);
-                } else {
-                    this.showMessage("I can't use this yet.");
-                }
-            });
+        // --------------------
+        // Exit Button
+        const exitBtn = this.add.image(970, 40, "exit-icon")
+            .setScale(0.07)
+            .setInteractive({ useHandCursor: true });
+
+        exitBtn.on("pointerdown", () => {
+            this.scene.start(lastScene);
         });
 
 
+        const itemData = {
+            pen: { image: 'pen', name: 'Pen', scale: 0.4 },
+            dirtyBlanket: { image: 'folded-blanket', name: 'Dirty Blanket', scale: 0.3 }
+        };
+
+        const startX = 355;
+        const startY = 248;
+        const spacingX = 220;
+        const spacingY = 260;
+        const columns = 3;
+
+        inventory.forEach((itemKey, index) => {
+            const data = itemData[itemKey];
+            if (!data) {
+                console.warn("Missing itemData for:", itemKey);
+                return;
+            }
+
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+            const x = Math.round(startX + col * spacingX);
+            const y = Math.round(startY + row * spacingY);
+
+            // Card container
+            const cardBg = this.add.image(0, 0, "inventory-card").setScale(0.26);
+            const icon = this.add.image(0, -40, data.image).setScale(data.scale);
+
+            const label = this.add.text(0, 75, data.name, {
+                fontFamily: '"Biro Script Plus"',
+                fontSize: "38px",
+                fontWeight: "normal",
+                color: "#b402ad"
+            }).setOrigin(0.5);
+
+            const container = this.add.container(x, y, [cardBg, icon, label]);
+            container.setSize(cardBg.displayWidth, cardBg.displayHeight);
+            container.setInteractive({ useHandCursor: true });
+            container.on("pointerdown", () => console.log("Clicked:", data.name));
+        });
     }
-  }
+
+
+}
 
 
 // --------------------
@@ -322,16 +332,16 @@ class MapScene extends Phaser.Scene {
       }
       else{location = "My Room."}
 
-      document.fonts.load('24px "Biro Script Plus"').then(() => {
-        this.message = this.add.text(537, 750, "You're in " + location, {
-            fontFamily: 'Biro Script Plus',
-            fontWeight: "normal",
+    
+
+        this.add.text(537, 750, "You're in " + location, {
+            fontFamily: '"Biro Script Plus"',
             fontSize: "24px",
-            fill: "#000",
+            fontWeight: "normal",
+            color: "#b402ad"
         })
         .setOrigin(0.5)
         .setRotation(Phaser.Math.DegToRad(5));
-    });
 
       // --------------------
       //EXIT
@@ -355,15 +365,23 @@ class MapScene extends Phaser.Scene {
 // --------------------
 // Game configuration
 // --------------------
-const config = {
-  type: Phaser.AUTO,
-  width: 1024,
-  height: 768,
-  parent: "game-container",
-  backgroundColor: "#e6e6e6",
 
-  scene: [PreloadScene, GirlRoom, InventoryScene, MapScene]
-};
-const game = new Phaser.Game(config);
+
+window.addEventListener("load", async () => {
+
+  await document.fonts.load('24px "Biro Script Plus"');
+  await document.fonts.ready;
+
+  const config = {
+    type: Phaser.AUTO,
+    width: 1024,
+    height: 768,
+    parent: "game-container",
+    backgroundColor: "#e6e6e6",
+    scene: [PreloadScene, GirlRoom, InventoryScene, MapScene]
+  };
+
+  new Phaser.Game(config);
+});
 
 
