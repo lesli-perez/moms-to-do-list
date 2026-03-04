@@ -42,6 +42,7 @@ class PreloadScene extends Phaser.Scene {
             { key: "exit-icon", path: "assets/img/objects/x.png" },
             {key: "map", path: "assets/img/scenes/map.png"},
             {key: "map-icon", path: "assets/img/objects/map-icon.png"},
+            { key: "kitchen", path: "assets/img/scenes/kitchen.png" },            
         ];
 
         gameAssets.forEach(asset => {
@@ -225,6 +226,86 @@ class GirlRoom extends Phaser.Scene {
 
 
 // --------------------
+// Kitchen
+// --------------------
+class KitchenScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'KitchenScene' });
+    }
+
+    create() {
+        const lastScene = this.registry.get('lastScene') || 'GirlRoom';
+        const inventory = this.registry.get('inventory');
+        const removedItems = this.registry.get('removedItems');
+
+        // --------------------
+        // Background
+        this.add.image(512, 384, "kitchen")
+            .setDisplaySize(1024, 768);
+
+         // --------------------
+        // Items
+        const items = [
+            { 
+                key: "inventory-icon", 
+                x: 970, y: 700, scale: 0.09,
+                message: "",
+                newScene: "InventoryScene"
+            },
+            { 
+                key: "map-icon", 
+                x: 970, y: 50, scale: 0.19,
+                message: "",
+                newScene: "MapScene"
+            },
+        ];
+
+        // --------------------
+        // Interactivity (is that a word?)
+        items.forEach(item => {
+          // dont create items that are in inventory or removed!!
+            if (removedItems.has(item.key)) {
+              return;
+            }
+
+            const obj = this.add.image(item.x, item.y, item.key).setScale(item.scale);
+            obj.setInteractive({ useHandCursor: true, pixelPerfect: true });
+
+            obj.on("pointerdown", () => {
+                // Check prerequisites
+                if (item.newScene){
+                  this.registry.set('lastScene', this.scene.key);
+                  this.scene.start(item.newScene);
+                }
+                if (!item.requiredInventory || inventory.has(item.requiredInventory)) {
+                    this.showMessage(item.message);
+                    if (item.addToInventory) inventory.add(item.addToInventory);
+                   if (item.disappear) {
+                      obj.setVisible(false).disableInteractive();
+                      
+                      // remove item globally
+                      removedItems.add(item.key);
+                      this.registry.set('removedItems', removedItems);
+                  }
+                } else {
+                    this.showMessage("I can't use this yet.");
+                }
+            });
+        });
+
+        // --------------------
+        // Show coordinates (remove later!!!!!)
+        // --------------------
+        const coordText = this.add.text(10, 10, '', { font: '16px Arial', fill: '#ffffff' });
+        this.input.on('pointermove', pointer => {
+            coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
+        });
+
+    }
+}
+
+
+// --------------------
 // Inventory
 // --------------------
 class InventoryScene extends Phaser.Scene {
@@ -343,6 +424,29 @@ class MapScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setRotation(Phaser.Math.DegToRad(5));
 
+        // --------------------
+        // Clickable Map Areas
+        const locations = [
+        { scene: "GirlRoom", x: 700, y: 400, width: 250, height: 135, rotation: Phaser.Math.DegToRad(4) },
+        { scene: "KitchenScene", x: 464, y: 256, width: 210, height: 395, rotation: Phaser.Math.DegToRad(4) }
+        ];
+
+        locations.forEach(loc => {
+        const zone = this.add.zone(loc.x, loc.y, loc.width, loc.height);
+        zone.setOrigin(0.5);
+        zone.setRotation(loc.rotation);
+        zone.setInteractive({ useHandCursor: true });
+
+        zone.on("pointerdown", () => {
+            this.scene.start(loc.scene);
+        });
+
+        // debug rectangles for adjusting positions
+        // const debugRect = this.add.rectangle(loc.x, loc.y, loc.width, loc.height, 0xff0000, 0.3);
+        // debugRect.setOrigin(0.5);
+        // debugRect.setRotation(loc.rotation);
+        });
+
       // --------------------
       //EXIT
         const items  = [
@@ -358,6 +462,14 @@ class MapScene extends Phaser.Scene {
       obj.on("pointerdown", () => {
          this.scene.start(lastScene);
       })
+
+              // --------------------
+        // Show coordinates (remove later!!!!!)
+        // --------------------
+        const coordText = this.add.text(10, 10, '', { font: '16px Arial', fill: '#ffffff' });
+        this.input.on('pointermove', pointer => {
+            coordText.setText(`X: ${Math.round(pointer.x)}, Y: ${Math.round(pointer.y)}`);
+        });
     }
   }
 
@@ -378,7 +490,7 @@ window.addEventListener("load", async () => {
     height: 768,
     parent: "game-container",
     backgroundColor: "#e6e6e6",
-    scene: [PreloadScene, GirlRoom, InventoryScene, MapScene]
+    scene: [PreloadScene, GirlRoom, InventoryScene, MapScene, KitchenScene]
   };
 
   new Phaser.Game(config);
